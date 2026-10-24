@@ -1,0 +1,1078 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0e6b5c">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Aykhan Apps">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<title>Aykhan Applications 2027</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: tabbed working page. Home (this week, what we have, what we can get), Schools, Documents, Funding, Dates. Sticky tab bar with progress. */
+:root {
+  --bg: #f2f5f3;
+  --surface: #ffffff;
+  --ink: #13201b;
+  --muted: #5a6b64;
+  --line: #d6dfda;
+  --accent: #0e6b5c;
+  --accent-ink: #ffffff;
+  --warn: #a8600a;
+  --warn-bg: #fbeed8;
+  --bad: #a3342b;
+  --bad-bg: #f8e1de;
+  --ok: #1d7a43;
+  --ok-bg: #dcf0e2;
+  --blue: #25598f;
+  --blue-bg: #dfeaf6;
+  --f-display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --f-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --f-mono: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0e1512; --surface: #162019; --ink: #e5eee9; --muted: #93a69d; --line: #2a3a32;
+    --accent: #4cc2a8; --accent-ink: #06201a; --warn: #f0b35c; --warn-bg: #3a2a10;
+    --bad: #f08a80; --bad-bg: #3b1a17; --ok: #6fd596; --ok-bg: #143323;
+    --blue: #8dbcf0; --blue-bg: #172a40; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0e1512; --surface: #162019; --ink: #e5eee9; --muted: #93a69d; --line: #2a3a32;
+  --accent: #4cc2a8; --accent-ink: #06201a; --warn: #f0b35c; --warn-bg: #3a2a10;
+  --bad: #f08a80; --bad-bg: #3b1a17; --ok: #6fd596; --ok-bg: #143323;
+  --blue: #8dbcf0; --blue-bg: #172a40; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--ink); font-family: var(--f-body); font-size: 15px; line-height: 1.55;
+  padding-block: 0 56px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.wrap { max-width: 1040px; margin: 0 auto; }
+h1, h2, h3 { font-family: var(--f-display); text-wrap: balance; margin: 0; line-height: 1.15; }
+h1 { font-size: clamp(30px, 6vw, 46px); letter-spacing: -0.02em; }
+h2 { font-size: 24px; letter-spacing: -0.01em; }
+h3 { font-size: 17px; }
+p { margin: 0; }
+a { color: var(--accent); }
+.mono { font-family: var(--f-mono); font-variant-numeric: tabular-nums; }
+.eyebrow { font-family: var(--f-mono); font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+header { padding-block: 36px 20px; display: grid; gap: 12px; }
+header p.lead { max-width: 64ch; color: var(--muted); font-size: 16px; }
+
+.nav {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5;
+  background: var(--bg); border-block: 1px solid var(--line);
+  padding-block: 8px; display: flex; flex-wrap: wrap; gap: 6px 8px; align-items: center;
+}
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg); }
+.nav button.tab {
+  font: inherit; font-size: 14px; font-weight: 500; cursor: pointer; color: var(--ink); background: transparent;
+  border: 1px solid transparent; border-radius: 6px; padding: 6px 12px;
+}
+.nav button.tab[aria-selected="true"] { background: var(--accent); color: var(--accent-ink); }
+.nav .pg { margin-left: auto; display: flex; gap: 10px; align-items: center; font-size: 13px; color: var(--muted); }
+.nav .pg b { font-family: var(--f-mono); color: var(--ink); }
+.meter { width: 90px; height: 8px; background: var(--line); border-radius: 4px; overflow: hidden; }
+.meter i { display: block; height: 100%; width: 0; background: var(--accent); transition: width .3s; }
+
+.pane { display: none; }
+.pane.on { display: grid; gap: 28px; padding-top: 28px; }
+section { display: grid; gap: 14px; }
+.sub { color: var(--muted); max-width: 72ch; }
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px; display: grid; gap: 8px; align-content: start; min-width: 0; }
+.card b.big { font-family: var(--f-display); font-size: 20px; }
+.card .k { font-family: var(--f-mono); font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.card ul { margin: 0; padding-left: 18px; display: grid; gap: 5px; }
+.card .small { font-size: 13.5px; color: var(--muted); }
+.flag { background: var(--warn-bg); color: var(--warn); border-radius: 6px; padding: 8px 12px; font-size: 14px; }
+.two { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; }
+
+.task { display: flex; gap: 10px; align-items: flex-start; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; min-width: 0; }
+.task input { margin-top: 4px; accent-color: var(--accent); width: 16px; height: 16px; flex: none; }
+.task label { min-width: 0; cursor: pointer; }
+.task label small { display: block; color: var(--muted); font-size: 13px; }
+.task input:checked + label { text-decoration: line-through; color: var(--muted); }
+.tasks { display: grid; gap: 8px; }
+
+.ach { display: grid; gap: 8px; }
+.ach .it { display: flex; gap: 10px; align-items: center; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; min-width: 0; }
+.ach .it span { flex: 1; min-width: 0; }
+.ach .it button { font: inherit; font-size: 13px; cursor: pointer; background: transparent; color: var(--muted); border: 1px solid var(--line); border-radius: 4px; padding: 2px 8px; }
+.addrow { display: flex; gap: 8px; flex-wrap: wrap; }
+.addrow input[type="text"], input[type="search"] {
+  font: inherit; color: var(--ink); background: var(--surface); border: 1px solid var(--line);
+  border-radius: 6px; padding: 7px 12px; flex: 1 1 220px; min-width: 0;
+}
+button.btn { font: inherit; font-size: 14px; cursor: pointer; color: var(--accent-ink); background: var(--accent); border: 0; border-radius: 6px; padding: 7px 14px; }
+.chip {
+  font: inherit; font-size: 14px; cursor: pointer; color: var(--ink); background: var(--surface);
+  border: 1px solid var(--line); border-radius: 999px; padding: 6px 14px;
+}
+.chip[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+button:focus-visible, select:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.tools { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.bal { display: flex; flex-wrap: wrap; gap: 6px; }
+.bal span { font-family: var(--f-mono); font-size: 12px; background: var(--surface); border: 1px solid var(--line); border-radius: 4px; padding: 2px 8px; }
+
+.badge { display: inline-block; font-family: var(--f-mono); font-size: 11px; letter-spacing: .03em; padding: 2px 8px; border-radius: 4px; white-space: nowrap; }
+.b-free, .b-full { background: var(--ok-bg); color: var(--ok); }
+.b-need { background: var(--blue-bg); color: var(--blue); }
+.b-part { background: var(--warn-bg); color: var(--warn); }
+.b-low { background: var(--line); color: var(--ink); }
+.b-pay { background: var(--bad-bg); color: var(--bad); }
+.b-state { background: var(--ok-bg); color: var(--ok); }
+.legend { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 10px 20px; }
+.lg { display: grid; grid-template-columns: 124px 1fr; gap: 10px; align-items: start; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; min-width: 0; }
+.lg span.t { font-size: 14px; color: var(--muted); min-width: 0; }
+.lg span.t b { color: var(--ink); font-weight: 600; }
+
+.group { display: grid; gap: 8px; }
+.group > h3 { padding-top: 10px; display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; }
+.group > h3 small { font-family: var(--f-body); font-weight: 400; color: var(--muted); font-size: 14px; }
+.row {
+  background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px;
+  display: grid; gap: 6px 16px; grid-template-columns: 64px minmax(0, 1.4fr) minmax(0, 1fr) minmax(0, 1fr) 128px; align-items: start;
+}
+.row.done { border-color: var(--ok); }
+.row.skip { opacity: .55; }
+.row .nm { font-weight: 600; min-width: 0; }
+.row .nm em { font-style: normal; font-weight: 400; color: var(--muted); font-size: 13px; display: block; }
+.row .nm em.rk { font-family: var(--f-mono); font-size: 12px; color: var(--accent); margin-top: 2px; }
+.row .cell { min-width: 0; font-size: 14px; display: grid; gap: 3px; justify-items: start; }
+.row .cell .k { display: block; font-family: var(--f-mono); font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.row .note { grid-column: 1 / -1; color: var(--muted); font-size: 13.5px; }
+.row .dpn { grid-column: 1 / -1; font-size: 13.5px; color: var(--ok); }
+select {
+  font: inherit; font-size: 14px; color: var(--ink); background: var(--bg); border: 1px solid var(--line);
+  border-radius: 6px; padding: 6px 8px; width: 100%;
+}
+.tag { display: inline-block; font-family: var(--f-mono); font-size: 11px; padding: 1px 7px; border-radius: 4px; margin-left: 6px; vertical-align: 1px; }
+.tag.reach { background: var(--bad-bg); color: var(--bad); }
+.tag.lang { background: var(--warn-bg); color: var(--warn); }
+.tag.p1 { background: var(--accent); color: var(--accent-ink); }
+.tag.p2 { background: var(--blue-bg); color: var(--blue); }
+.tag.p3 { background: var(--line); color: var(--ink); }
+
+.doc { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; display: grid; gap: 6px 16px; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1.2fr) 130px; align-items: start; }
+.doc.have { border-color: var(--ok); }
+.doc .nm { font-weight: 600; min-width: 0; }
+.doc .nm small { display: block; font-weight: 400; color: var(--muted); font-size: 13px; }
+.doc .cell { min-width: 0; font-size: 14px; }
+.doc .cell .k { display: block; font-family: var(--f-mono); font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.doc .due { color: var(--warn); font-family: var(--f-mono); font-size: 13px; }
+
+.bars { display: grid; gap: 6px; }
+.bar-row { display: grid; grid-template-columns: 120px 1fr 40px; gap: 10px; align-items: center; font-size: 14px; }
+.bar-row i { display: block; height: 14px; background: var(--accent); border-radius: 3px; min-width: 2px; }
+.bar-row span.n { font-family: var(--f-mono); text-align: right; }
+
+.tl { display: grid; gap: 0; border-left: 2px solid var(--line); margin-left: 6px; }
+.tl .ev { position: relative; padding: 0 0 18px 22px; display: grid; gap: 2px; }
+.tl .ev::before { content: ""; position: absolute; left: -7px; top: 6px; width: 12px; height: 12px; border-radius: 50%; background: var(--surface); border: 2px solid var(--accent); }
+.tl .ev.hot::before { background: var(--warn); border-color: var(--warn); }
+.tl .when { font-family: var(--f-mono); font-size: 13px; color: var(--muted); }
+.tl .ev.hot .when { color: var(--warn); font-weight: 500; }
+.tl .what { font-weight: 600; }
+.tl .how { color: var(--muted); font-size: 14px; }
+.risks { display: grid; gap: 10px; }
+.risk { background: var(--surface); border: 1px solid var(--line); border-left: 4px solid var(--warn); border-radius: 8px; padding: 12px 16px; display: grid; gap: 2px; }
+.risk b { font-family: var(--f-display); }
+.risk span { color: var(--muted); font-size: 14.5px; }
+footer { margin-top: 44px; padding-top: 16px; border-top: 1px solid var(--line); color: var(--muted); font-size: 13px; max-width: 72ch; }
+
+.rkbox { display: grid; justify-items: center; align-content: center; min-width: 58px; padding: 6px 4px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); line-height: 1.1; align-self: start; }
+.rkbox b { font-family: var(--f-display); font-size: 17px; }
+.rkbox span { font-family: var(--f-mono); font-size: 10px; color: var(--muted); letter-spacing: .04em; }
+.rkbox.ex { border-color: var(--accent); }
+.rkbox.ex b { color: var(--accent); }
+button.lnk { font: inherit; font-weight: 600; color: var(--ink); background: none; border: 0; padding: 0; cursor: pointer; text-align: left; text-decoration: underline; text-decoration-color: var(--line); text-underline-offset: 3px; }
+button.lnk:hover { text-decoration-color: var(--accent); color: var(--accent); }
+button.lnk.sm { font-weight: 400; font-size: 13.5px; color: var(--accent); }
+.days { font-family: var(--f-mono); font-size: 11px; background: var(--blue-bg); color: var(--blue); border-radius: 4px; padding: 1px 7px; }
+.days.soon { background: var(--warn-bg); color: var(--warn); }
+.days.late { background: var(--line); color: var(--muted); }
+.tblwrap { overflow-x: auto; }
+.tbl { border-collapse: collapse; width: 100%; font-size: 14px; min-width: 760px; }
+.tbl th { text-align: left; font-family: var(--f-mono); font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); padding: 6px 8px; border-bottom: 1px solid var(--line); }
+.tbl td { padding: 6px 8px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+.tbl select { width: 120px; }
+.shead { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; }
+.shead > div:nth-child(2) { flex: 1 1 260px; min-width: 0; display: grid; gap: 6px; }
+.shst { min-width: 150px; display: grid; gap: 3px; }
+.shst .k, .row .k { font-family: var(--f-mono); font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.stack { display: grid; gap: 16px; align-content: start; min-width: 0; }
+.card p { margin: 0; }
+textarea, .row input[type="text"], .row input[type="number"] { font: inherit; color: var(--ink); background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 7px 10px; width: 100%; min-width: 0; }
+.nx { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 8px 12px; min-width: 0; }
+.nx .small { color: var(--muted); font-size: 13px; }
+.row.dec { grid-template-columns: 64px minmax(0,1.3fr) minmax(0,1fr) minmax(0,1fr) 150px; }
+.row .small { font-size: 13px; color: var(--muted); }
+.toolbar select { width: auto; }
+@media (max-width: 720px) {
+  .row, .row.dec { grid-template-columns: 64px 1fr; }
+  .row .cell, .row .st { grid-column: 1 / -1; }
+  .doc { grid-template-columns: 1fr; }
+  .lg { grid-template-columns: 1fr; }
+  .nav .pg { margin-left: 0; width: 100%; }
+}
+@media (prefers-reduced-motion: reduce) { .meter i { transition: none; } }
+</style>
+
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div class="eyebrow">Fall 2027 entry · bachelor's</div>
+  <h1>Aykhan's applications</h1>
+  <p class="lead">What we have, what we can get, every school with a priority and a status, the documents to collect, and the Dövlət Proqramı evidence from the list. Apply widely, then choose one when the offers are in.</p>
+</header>
+
+<nav class="nav" aria-label="Sections">
+  <button class="tab" data-tab="home" aria-selected="true">Home</button>
+  <button class="tab" data-tab="schools" aria-selected="false">Schools</button>
+  <button class="tab" data-tab="docs" aria-selected="false">Documents</button>
+  <button class="tab" data-tab="decide" aria-selected="false">Offers</button>
+  <button class="tab" data-tab="funding" aria-selected="false">Funding</button>
+  <button class="tab" data-tab="dates" aria-selected="false">Dates</button>
+  <div class="pg" role="status" aria-live="polite"><span><b id="n-sub">0</b> submitted</span><span><b id="n-all">0</b> schools</span><div class="meter" aria-hidden="true"><i id="meter"></i></div></div>
+</nav>
+
+<!-- HOME -->
+<div class="pane on" id="p-home">
+  <section>
+    <h2>Do this week</h2>
+    <p class="sub">The first US deadline is 1 November. These come first.</p>
+    <div class="tasks" id="tasks"></div>
+  </section>
+
+  <section>
+    <h2>Coming up</h2>
+    <p class="sub">The next deadlines among schools not yet submitted. Dates are expected and need checking.</p>
+    <div class="tasks" id="next"></div>
+  </section>
+
+  <section>
+    <h2>What we have</h2>
+    <div class="grid">
+      <div class="card"><span class="k">School grades</span><b class="big">4.9–5.0 / 5</b><span class="small">A and A+ across subjects.</span></div>
+      <div class="card"><span class="k">SAT</span><b class="big">1380</b><span class="small">Good for most schools, below the median at the most selective.</span></div>
+      <div class="card"><span class="k">IELTS</span><b class="big">7.0</b><span class="small">Meets the C1 line for the State Program. The stamped report is still to collect.</span></div>
+      <div class="card"><span class="k">Budget</span><b class="big">≤ €5k tuition / yr</b><span class="small">Living costs not counted.</span></div>
+    </div>
+    <h3>Achievements</h3>
+    <p class="sub">Add every medal, rank, project and award with its year. These go into essays, CVs, scholarship forms and the State Program exemption.</p>
+    <div class="ach" id="ach"></div>
+    <div class="addrow"><input type="text" id="ach-in" placeholder="Example: Silver medal, national informatics olympiad, 2025" aria-label="New achievement"><button class="btn" id="ach-add">Add</button></div>
+  </section>
+
+  <section>
+    <h2>Best ranked on the list</h2>
+    <p class="sub">Highest QS rank first, skipped schools left out. Green boxes are exact QS 2027 ranks, grey boxes are approximate bands.</p>
+    <div class="tasks" id="top"></div>
+  </section>
+
+  <section>
+    <h2>Tests</h2>
+    <div class="grid" id="tests"></div>
+  </section>
+
+  <section>
+    <h2>What we can get</h2>
+    <p class="sub">Counts come from the school list on the Schools tab.</p>
+    <div class="grid" id="get"></div>
+  </section>
+
+  <section>
+    <h2>Things that can break the plan</h2>
+    <div class="risks">
+      <div class="risk"><b>UCAS allows five choices</b><span>The UK list is long because the State Program has paid there often, but only five schools fit in one application. Pick them by the Edinburgh, KCL, Imperial, UCL and Birmingham or Manchester order, or by where he wants to go.</span></div>
+      <div class="risk"><b>US full-aid schools admit very few internationals</b><span>Even need-blind schools take a small share. At SAT 1380 his olympiad and programming record has to carry each application. Apply to many, expect few offers.</span></div>
+      <div class="risk"><b>Language of instruction</b><span>Many strong schools in Germany, Austria, Switzerland, France and Spain teach bachelor's in the local language. They carry a language tag on the Schools tab.</span></div>
+      <div class="risk"><b>Azerbaijani school certificate recognition</b><span>Some countries may not accept it directly and ask for a foundation year or 12 years of schooling.</span></div>
+      <div class="risk"><b>Application fees add up</b><span>With this many schools, fees reach several thousand euros. Ask for fee waivers where offered.</span></div>
+      <div class="risk"><b>Rank tags are approximate</b><span>Tags marked QS 2027 are exact. Tags starting with ≈ are bands from recent QS lists. Check topuniversities.com before deciding.</span></div>
+    </div>
+  </section>
+</div>
+
+<!-- SCHOOLS -->
+<div class="pane" id="p-schools">
+  <section>
+    <h2>Schools</h2>
+    <p class="sub">All schools are here. Priority is marked on some and left blank on the rest. Green lines show how many bachelor's students the State Program has funded there, from the list you sent.</p>
+    <div class="bal" id="bal" aria-label="Schools per country"></div>
+    <div class="tools toolbar">
+      <label class="small" for="sort">Sort by</label>
+      <select id="sort" aria-label="Sort schools"><option value="priority">Priority</option><option value="rank">Rank</option><option value="deadline">Deadline</option><option value="funded">State Program count</option><option value="country">Country</option><option value="name">Name</option></select>
+      <button class="chip" data-mode="cards" aria-pressed="true">Cards</button>
+      <button class="chip" data-mode="table" aria-pressed="false">Table</button>
+    </div>
+    <div class="tools">
+      <button class="chip" data-p="all" aria-pressed="true">All</button>
+      <button class="chip" data-p="1" aria-pressed="false">Priority 1</button>
+      <button class="chip" data-p="2" aria-pressed="false">Priority 2</button>
+      <button class="chip" data-p="3" aria-pressed="false">Priority 3</button>
+      <button class="chip" data-p="0" aria-pressed="false">No priority</button>
+      <button class="chip" data-p="state" aria-pressed="false">State-funded before</button>
+      <input type="search" id="q" placeholder="Search school or country" aria-label="Search schools">
+      <button class="chip" id="hide-skip" aria-pressed="false">Hide skipped</button>
+    </div>
+    <div id="list"></div>
+  </section>
+</div>
+
+<!-- SCHOOL PAGE -->
+<div class="pane" id="p-school"><div id="sc"></div></div>
+
+<!-- DOCUMENTS -->
+<div class="pane" id="p-docs">
+  <section>
+    <h2>Documents</h2>
+    <p class="sub">Set each one to Need, Doing or Have. Start with the ones that need a visit or a stamp.</p>
+    <div class="tools">
+      <button class="chip" data-d="all" aria-pressed="true">All</button>
+      <button class="chip" data-d="need" aria-pressed="false">Need</button>
+      <button class="chip" data-d="doing" aria-pressed="false">Doing</button>
+      <button class="chip" data-d="have" aria-pressed="false">Have</button>
+    </div>
+    <div class="tasks" id="doclist"></div>
+  </section>
+  <section>
+    <h2>People to ask</h2>
+    <p class="sub">Who has to do something for him.</p>
+    <div class="tasks" id="people"></div>
+  </section>
+</div>
+
+<!-- OFFERS -->
+<div class="pane" id="p-decide">
+  <section>
+    <h2>Compare offers</h2>
+    <p class="sub">Schools you set to Offer or Waitlisted show up here. Fill in the scholarship and what he would pay per year, then mark the one he picks.</p>
+    <div class="tasks" id="offers"></div>
+  </section>
+  <section>
+    <h2>Application fee estimate</h2>
+    <p class="sub">Counts schools you started or submitted. Rough numbers.</p>
+    <div class="tasks" id="fees"></div>
+  </section>
+</div>
+
+<!-- FUNDING -->
+<div class="pane" id="p-funding">
+  <section>
+    <h2>How funding works</h2>
+    <p class="sub">Each school shows one of these labels and what he would pay.</p>
+    <div class="legend">
+      <div class="lg"><span class="badge b-free">FREE</span><span class="t"><b>No tuition at all.</b> Hungary's scholarship also pays a monthly stipend and housing help.</span></div>
+      <div class="lg"><span class="badge b-full">FULL RIDE</span><span class="t"><b>A scholarship pays everything</b> for the full degree. You win it separately from admission.</span></div>
+      <div class="lg"><span class="badge b-need">FULL NEED</span><span class="t"><b>The school pays whatever the family cannot.</b> The family sends income documents (CSS Profile). Low income means little or nothing to pay. Admission is separate and very selective.</span></div>
+      <div class="lg"><span class="badge b-state">STATE PROGRAM</span><span class="t"><b>Full price, but the Dövlət Proqramı has paid for bachelor's students here before.</b> If he gets in and the state accepts him, the state pays tuition and living costs.</span></div>
+      <div class="lg"><span class="badge b-part">PARTIAL</span><span class="t"><b>A scholarship covers part.</b> The amount comes with the offer, so the cost is unknown until then.</span></div>
+      <div class="lg"><span class="badge b-low">LOW COST</span><span class="t"><b>Tuition is about €5k a year or less</b> even without a scholarship.</span></div>
+      <div class="lg"><span class="badge b-pay">PAY</span><span class="t"><b>Full price with no known route to cover it.</b> Only worth applying to if a scholarship turns up.</span></div>
+    </div>
+    <p class="sub"><b>Need-blind</b> means his ability to pay does not affect admission. <b>Need-aware</b> means it can. For internationals only Harvard, Yale, Princeton, MIT, Amherst, Bowdoin and Columbia are need-blind. Every other US school with full aid is need-aware.</p>
+  </section>
+
+  <section>
+    <h2>Dövlət Proqramı: what the list shows</h2>
+    <div class="card">
+      <p>The PDF you sent is the State Program's list of people who won a place. It has 2,231 entries, of which <b>522 are bachelor's</b>. Türkiye (177) and the one in the UAE are left out here because you dropped them. The rest show where the state has paid for bachelor's students before.</p>
+      <div class="bars" id="dpbars"></div>
+      <p class="small">This is a list of past winners, not the full list of eligible universities. A school that is missing here may still be eligible. The ministry's list of universities and programs is separate.</p>
+    </div>
+    <div class="two">
+      <div class="card">
+        <h3>What the rules say</h3>
+        <ul>
+          <li>500 places a year in total, and no more than 25% (about 125) for bachelor's.</li>
+          <li>Top-10 rule: with an admission letter from a university in the top 10 of QS or Times Higher Education, any field is accepted.</li>
+          <li>The state pays tuition, monthly living costs, health insurance, travel and visa.</li>
+          <li>He applies after he has an admission letter. The 2023 call closed 14 July, so expect a summer deadline.</li>
+          <li>Language: a C1 certificate. IELTS 7.0 should meet this, confirm on the program page.</li>
+          <li>Entrance: the DİM exam, at least 400 points for technical fields, unless exempt. A high SAT can replace it, and an olympiad medal exempts him from the exam and the interview.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Still to check</h3>
+        <ul>
+          <li>The current bachelor's rules. The ones above are from the 2023 call.</li>
+          <li>Whether the 2027/28 list of universities and programs includes each school here.</li>
+          <li>Any obligation after graduation. The state signs a contract with the student, so read it before accepting.</li>
+        </ul>
+        <p class="flag">Questions go to dp22-26@edu.gov.az or the 146 call center.</p>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- DATES -->
+<div class="pane" id="p-dates">
+  <section>
+    <h2>Dates that matter</h2>
+    <p class="sub">Most 2027 dates are carried over from last year's cycle and marked expected. Check each official page before submitting.</p>
+    <div class="tl" id="tl"></div>
+  </section>
+</div>
+
+<footer>Fees and dates come from the last published cycle and general knowledge, and need checking on each official site. Statuses, tasks, documents, notes and achievements are stored only in this browser.</footer>
+</div>
+
+<script>
+const AID = {
+  free:["FREE","b-free"], full:["FULL RIDE","b-full"], need:["FULL NEED","b-need"], state:["STATE PROGRAM","b-state"],
+  part:["PARTIAL","b-part"], low:["LOW COST","b-low"], pay:["PAY","b-pay"]
+};
+const S = [];
+// e(id, priority, name, country, aid, what he pays, deadline, note, flags)  priority 1-3, 0 = none. flags: R reach, L:language
+const e = (id, p, n, c, aid, cost, dl, note = "", fl = "") => S.push({ id, p, n, c, aid, cost, dl, note, fl });
+
+// Hungary
+e("sh",1,"Stipendium Hungaricum","Hungary","free","Free tuition + stipend + housing support","~15 Jan 2027, 14:00 CET (expected)","Pick two English-taught programs (BME, ELTE, Szeged, Debrecen). Azerbaijan's sending partner has an earlier internal deadline, ask them now.");
+// USA need-blind
+e("mit",1,"MIT","USA","need","Pays full need. Need-blind for internationals","1 Nov 2026 (Early Action)","Best fit for his olympiad and programming record. CSS Profile required.","R");
+e("princ",1,"Princeton","USA","need","Pays full need. Need-blind for internationals","1 Nov 2026 (Single-Choice Early Action)","Harvard, Yale and Princeton early rounds exclude each other. Pick one for 1 Nov and send the others in January.","R");
+e("yale",1,"Yale","USA","need","Pays full need. Need-blind for internationals","1 Nov 2026 (Single-Choice Early Action)","See the Princeton note on early rounds.","R");
+e("harv",1,"Harvard","USA","need","Pays full need. Need-blind for internationals","1 Nov 2026 (Restrictive Early Action) or ~1 Jan 2027","See the Princeton note on early rounds.","R");
+e("amh",2,"Amherst College","USA","need","Pays full need. Need-blind for internationals","~1 Jan 2027 (skip the binding early round)","Small liberal arts college with strong aid.","R");
+e("bow",2,"Bowdoin College","USA","need","Pays full need. Need-blind for internationals","~5 Jan 2027 (skip the binding early round)","Strong aid, small classes.","R");
+e("col",2,"Columbia University","USA","need","Pays full need. Need-blind for internationals","~1 Jan 2027 (skip the binding early round)","Need-blind but extremely selective.","R");
+// USA full need, need-aware
+e("stan",2,"Stanford University","USA","need","Pays full need. Need-aware for internationals","~5 Jan 2027 (REA 1 Nov)","","R");
+e("dart",3,"Dartmouth College","USA","need","Pays full need","~2 Jan 2027 (skip the binding early round)","Confirm current policy for internationals.","R");
+e("cal",3,"Caltech","USA","need","Pays full need. Need-aware for internationals","~3 Jan 2027 (REA 1 Nov)","Small and very strong in math and physics. Fits an olympiad profile.","R");
+e("corn",3,"Cornell University","USA","need","Pays full need. Need-aware for internationals","~2 Jan 2027 (ED 1 Nov binding)","Strong CS and engineering.","R");
+e("brown",3,"Brown University","USA","need","Pays full need. Need-aware for internationals","~5 Jan 2027","","R");
+e("penn",3,"University of Pennsylvania","USA","need","Pays full need. Need-aware for internationals","~5 Jan 2027 (ED 1 Nov binding)","","R");
+e("duke",3,"Duke University","USA","need","Pays full need. Need-aware for internationals","~2 Jan 2027","","R");
+e("nw",3,"Northwestern University","USA","need","Pays full need. Need-aware for internationals","~3 Jan 2027","","R");
+e("uchi",3,"University of Chicago","USA","need","Pays full need. Need-aware for internationals","~2 Jan 2027","Math and CS strong.","R");
+e("rice",0,"Rice University","USA","need","Pays full need. Need-aware for internationals","~4 Jan 2027","","R");
+e("vand",0,"Vanderbilt University","USA","need","Pays full need. Need-aware for internationals","~1 Jan 2027","","R");
+e("wust",0,"Washington University in St. Louis","USA","need","Pays full need. Need-aware for internationals","~2 Jan 2027","","R");
+e("nd",0,"University of Notre Dame","USA","need","Pays full need. Need-aware for internationals","~5 Jan 2027","","R");
+e("will",0,"Williams College","USA","need","Pays full need","~8 Jan 2027","Top liberal arts college.","R");
+e("swat",0,"Swarthmore College","USA","need","Pays full need","~4 Jan 2027","Strong engineering for a liberal arts college.","R");
+e("pomo",0,"Pomona College","USA","need","Pays full need","~8 Jan 2027","","R");
+e("hmc",0,"Harvey Mudd College","USA","need","Pays full need","~5 Jan 2027","Engineering and CS focus, small.","R");
+e("mid",0,"Middlebury College","USA","need","Pays full need","~1 Jan 2027","Check whether aid applies to his applicant category.","R");
+e("dav",0,"Davidson College","USA","need","Pays full need","~2 Jan 2027","","R");
+e("wes",0,"Wesleyan University","USA","need","Pays full need","~1 Jan 2027","","R");
+e("grin",0,"Grinnell College","USA","need","Pays full need","~1 Jan 2027","Known for generous aid to internationals.","R");
+e("ber",0,"Berea College","USA","free","Tuition covered for admitted students","~15 Dec 2026 (verify)","Takes internationals with demonstrated need. A campus work program is part of the deal.");
+// USA state-funded
+e("berk",2,"UC Berkeley","USA","state","~$50k/yr unless the State Program pays","~30 Nov 2026 (UC application)","Direct admission to CS is very hard. State Program funded data science, CS, EECS here.","R");
+e("gt",2,"Georgia Institute of Technology","USA","state","~$35k/yr unless the State Program pays","~1 Nov 2026 EA / ~1 Jan 2027","Strong CS, more reachable than the top research schools.");
+e("uiuc",2,"University of Illinois Urbana-Champaign","USA","state","~$40k/yr unless the State Program pays","~1 Nov 2026 EA / ~15 Jan 2027","Strong CS and engineering.");
+e("uwm",0,"University of Wisconsin-Madison","USA","state","~$38k/yr unless the State Program pays","~1 Dec 2026 (verify)","");
+e("ucsd",0,"UC San Diego","USA","state","~$48k/yr unless the State Program pays","~30 Nov 2026","");
+e("umich",0,"University of Michigan","USA","state","~$60k/yr unless the State Program pays","~1 Feb 2027 / EA 1 Nov","");
+e("utaus",0,"University of Texas at Austin","USA","state","~$45k/yr unless the State Program pays","~1 Dec 2026 (verify)","");
+e("tamu",0,"Texas A&M University","USA","state","~$35k/yr unless the State Program pays","~1 Dec 2026 (verify)","");
+e("umn",0,"University of Minnesota","USA","state","~$35k/yr unless the State Program pays","~1 Jan 2027","");
+e("gwu",0,"George Washington University","USA","state","~$65k/yr unless the State Program pays","~5 Jan 2027","");
+e("iowa",0,"Iowa State University","USA","state","~$28k/yr unless the State Program pays","Rolling","");
+// Canada
+e("pearson",1,"University of Toronto (Lester B. Pearson)","Canada","full","Everything paid for four years","School nomination, usually November. Ask his school this week","Needs a school nomination before he can apply. The State Program has funded Toronto four times.","R");
+e("ubc",2,"University of British Columbia","Canada","state","~CAD 45k/yr, partial award or State Program","~15 Jan 2027 (verify)","Outstanding International Student award. State Program has funded here.");
+e("mcg",2,"McGill University","Canada","state","~CAD 45k/yr unless the State Program pays","~15 Jan 2027 (verify)","");
+e("wat",3,"University of Waterloo","Canada","pay","~CAD 60k/yr","~1 Feb 2027 (verify)","Computer Science with paid co-op terms. Values competitive programming.");
+e("ualb",0,"University of Alberta","Canada","state","~CAD 35k/yr unless the State Program pays","~1 Mar 2027 (verify)","");
+e("calg",0,"University of Calgary","Canada","state","~CAD 30k/yr unless the State Program pays","~1 Mar 2027 (verify)","");
+e("mcm",0,"McMaster University","Canada","part","~CAD 40k/yr, entrance awards","~15 Jan 2027 (verify)","");
+e("sfu",0,"Simon Fraser University","Canada","part","~CAD 35k/yr, entrance awards","~15 Jan 2027 (verify)","");
+// UK (UCAS allows five choices)
+e("edi",1,"University of Edinburgh","UK","state","~£30k/yr unless the State Program pays","UCAS ~14 Jan 2027 (expected)","The State Program's most common bachelor's choice. Artificial Intelligence and Computer Science funded most often.");
+e("kcl",1,"King's College London","UK","state","~£30k/yr unless the State Program pays","UCAS ~14 Jan 2027 (expected)","State Program has funded Artificial Intelligence and Computer Science here.");
+e("imp",1,"Imperial College London","UK","state","~£40k/yr unless the State Program pays","UCAS ~14 Jan 2027 (expected)","Also covered by the top-10 rule. Check entry requirements for his certificate.","R");
+e("ucl",1,"University College London","UK","state","~£32k/yr unless the State Program pays","UCAS ~14 Jan 2027 (expected)","Also covered by the top-10 rule.");
+e("bham",2,"University of Birmingham","UK","state","~£26k/yr unless the State Program pays","UCAS ~14 Jan 2027 (expected)","Artificial Intelligence and Computer Science funded eleven times.");
+e("manc",2,"University of Manchester","UK","state","~£28k/yr unless the State Program pays","UCAS ~14 Jan 2027 (expected)","");
+e("leeds",2,"University of Leeds","UK","state","~£26k/yr unless the State Program pays","UCAS ~14 Jan 2027 (expected)","Computer Science funded nine times, more than any other major here.");
+e("glas",2,"University of Glasgow","UK","state","~£27k/yr unless the State Program pays","UCAS ~14 Jan 2027 (expected)","");
+e("war",2,"University of Warwick","UK","state","~£30k/yr unless the State Program pays","UCAS ~14 Jan 2027 (expected)","Computer Science funded twice.");
+e("bris",0,"University of Bristol","UK","state","~£28k/yr unless the State Program pays","UCAS ~14 Jan 2027 (expected)","Funded majors were economics and electrical engineering.");
+e("soton",0,"University of Southampton","UK","state","~£27k/yr unless the State Program pays","UCAS ~14 Jan 2027 (expected)","Artificial Intelligence funded twice.");
+e("stand",0,"University of St Andrews","UK","part","~£30k/yr, partial scholarships","UCAS ~14 Jan 2027 (expected)","");
+e("bath",0,"University of Bath","UK","part","~£28k/yr, partial scholarships","UCAS ~14 Jan 2027 (expected)","");
+e("qmul",0,"Queen Mary University of London","UK","state","~£27k/yr unless the State Program pays","UCAS ~14 Jan 2027 (expected)","Funded majors were economics.");
+e("newc",0,"Newcastle University","UK","state","~£26k/yr unless the State Program pays","UCAS ~14 Jan 2027 (expected)","Funded major was architecture.");
+e("york",0,"University of York","UK","state","~£26k/yr unless the State Program pays","UCAS ~14 Jan 2027 (expected)","");
+e("camb",0,"University of Cambridge","UK","state","~£40k/yr unless the State Program pays","Closed 15 Oct 2026","Oxbridge deadline has passed. Funded once in economics.","R");
+// Asia
+e("hku",1,"University of Hong Kong","Hong Kong","state","Scholarship or State Program","~Nov 2026 – Jan 2027 (verify)","Second most funded bachelor's destination after Edinburgh. Computer Science funded 14 times. Accepts SAT.");
+e("cuhk",3,"Chinese University of Hong Kong","Hong Kong","state","Scholarship or State Program","~Nov 2026 – Jan 2027 (verify)","");
+e("hkust",0,"HKUST","Hong Kong","part","Scholarship decides the cost","~Nov 2026 – Jan 2027 (verify)","Accepts SAT. Strong CS.");
+e("polyu",0,"Hong Kong Polytechnic University","Hong Kong","state","Scholarship or State Program","~Nov 2026 – Jan 2027 (verify)","");
+e("nus",2,"National University of Singapore","Singapore","state","Tuition grant with work bond, or State Program","~Feb 2027 (verify)","State Program has funded twelve.");
+e("ntu",2,"Nanyang Technological University","Singapore","state","Tuition grant with work bond, or State Program","~Jan–Feb 2027 (verify)","");
+e("sjtu",3,"Shanghai Jiao Tong University","China","state","CSC or State Program","~Jan–Apr 2027 (verify)","Electrical and computer engineering and computer science funded.");
+e("zju",0,"Zhejiang University","China","state","CSC or State Program","~Jan–Apr 2027 (verify)","");
+e("csc",3,"Peking, Tsinghua via CSC","China","full","Full via the Chinese Government Scholarship","~Jan–Apr 2027 (verify)","Apply to the universities and the CSC at the same time.");
+e("kaist",3,"KAIST","South Korea","state","Full for admitted internationals, or State Program","~Jan 2027 (verify)","State Program has funded three, all computing.");
+e("snu",0,"Seoul National University","South Korea","state","Scholarship or State Program","~Sep 2026 – spring 2027 (verify)","");
+e("unist",0,"UNIST","South Korea","state","Scholarship or State Program","Spring 2027 (verify)","");
+e("sejong",0,"Sejong University","South Korea","state","Scholarship or State Program","Spring 2027 (verify)","");
+e("tech",0,"Technion","Israel","state","Scholarship or State Program","Spring 2027 (verify)","");
+e("mon",0,"Monash University","Australia","state","~AUD 42k/yr unless the State Program pays","Rolling","");
+// EU
+e("polimi",2,"Politecnico di Milano","Italy","low","~€1–4k/yr by family income","Rounds Jan–Mar 2027 (expected)","English-taught engineering. Entrance test (TOL). Check the 12-years-of-school rule.");
+e("polito",2,"Politecnico di Torino","Italy","low","~€1–4k/yr by family income","Rounds Jan–Mar 2027 (expected)","English-taught engineering. EDISU scholarship possible.");
+e("trento",3,"University of Trento","Italy","low","~€1–3k/yr by family income","~Feb–Mar 2027 (expected)","BSc Computer Science in English.");
+e("sap",0,"Sapienza University of Rome","Italy","state","~€1–3k/yr","Early 2027","State Program funded Applied CS and AI here. English-taught.");
+e("bol",0,"University of Bologna","Italy","low","~€1–3k/yr","Early 2027","Few English bachelor's in CS.");
+e("uc3m",2,"Universidad Carlos III de Madrid","Spain","low","~€2–3k/yr (verify)","Rounds Jan–Jun 2027","Computer Science and Engineering in English. Non-EU applicants need the UNEDasiss credential, so start early.");
+e("upf",3,"Universitat Pompeu Fabra","Spain","low","~€1.5–3k/yr (verify)","Rounds Jan–Jun 2027","Check which engineering degrees are in English.");
+e("upc",0,"Universitat Politècnica de Catalunya","Spain","low","~€1.5–3k/yr (verify)","Rounds Jan–Jun 2027","Check which engineering degrees are in English.");
+e("ub",0,"Universitat de Barcelona","Spain","low","~€1.5–3k/yr","Rounds Jan–Jun 2027","Bachelor's in Spanish or Catalan.","L:Spanish");
+e("uam",0,"Universidad Autónoma de Madrid","Spain","low","~€2–3k/yr","Rounds Jan–Jun 2027","Bachelor's in Spanish.","L:Spanish");
+e("xp",2,"École Polytechnique, Bachelor of Science","France","part","~€12k/yr, grants for internationals","~Jan–Feb 2027 (verify)","English-taught, selective.","R");
+e("ipp",3,"Institut Polytechnique de Paris","France","part","~€8–12k/yr, grants (verify)","~Jan–Mar 2027 (verify)","Check which bachelor's programs are taught in English.");
+e("saclay",0,"Université Paris-Saclay","France","low","~€2,900/yr for non-EU","Campus France round, Jan–Mar 2027","Bachelor's mostly in French.","L:French");
+e("sorb",0,"Sorbonne Université","France","low","~€2,900/yr for non-EU","Campus France round, Jan–Mar 2027","Bachelor's mostly in French.","L:French");
+e("psl",0,"Université PSL","France","low","~€2,900/yr for non-EU","Campus France round, Jan–Mar 2027","Programs mostly in French.","L:French");
+e("kul",3,"KU Leuven","Belgium","state","~€7–9k/yr unless the State Program pays","~1 Mar 2027 (verify)","State Program has funded engineering technology twelve times. Check the language of instruction.");
+e("uva",3,"University of Amsterdam","Netherlands","state","~€14–17k/yr unless the State Program pays","~1 May 2027 (verify)","Funded: business analytics, econometrics and data science.");
+e("delft",3,"TU Delft","Netherlands","pay","~€17–20k/yr","~15 Jan 2027 (expected)","English bachelor's. Check certificate recognition.");
+e("eras",0,"Erasmus University Rotterdam","Netherlands","state","~€13–15k/yr unless the State Program pays","~15 Jan 2027 (verify)","");
+e("tue",0,"TU Eindhoven","Netherlands","pay","~€15–17k/yr","~15 Jan 2027 (verify)","");
+e("twente",0,"University of Twente","Netherlands","part","~€14–17k/yr, merit scholarship","~Jan–Apr 2027 (verify)","University of Twente Scholarship can cover a large part.");
+e("gron",0,"University of Groningen","Netherlands","part","~€13–17k/yr, Talent Grant","~1 Feb–1 May 2027","");
+e("jku",3,"Johannes Kepler University Linz","Austria","low","~€1,450/yr for non-EU","Usually spring–summer 2027 (verify)","BSc Artificial Intelligence taught in English.");
+e("tuw",0,"TU Wien","Austria","low","~€1,450/yr for non-EU","Usually 1 Sep 2027 (verify)","Bachelor's in German.","L:German");
+e("ctu",3,"Czech Technical University in Prague","Czechia","low","~€4–6k/yr (verify)","Usually 31 Mar 2027","English bachelor's in informatics.");
+e("char",0,"Charles University","Czechia","pay","~€4–8k/yr","Varies by faculty","");
+e("wut",0,"Warsaw University of Technology","Poland","low","~€3–4k/yr (verify)","Rounds Feb–Jun 2027","English-taught computer science.");
+e("tartu",0,"University of Tartu","Estonia","low","~€4–6k/yr (verify)","Usually 15 Apr 2027","BSc Computer Science in English.");
+e("tcd",0,"Trinity College Dublin","Ireland","state","~€25–30k/yr unless the State Program pays","CAO ~1 Feb 2027 (verify)","Funded once, in biology.");
+e("ucd",0,"University College Dublin","Ireland","part","~€25–30k/yr, Global Excellence Scholarship","CAO ~1 Feb 2027 (verify)","");
+e("tum",0,"TU Munich","Germany","low","Non-EU fees apply, check amount","Usually 31 May 2027","Bachelor's in German. Needs German and likely Studienkolleg. State Program funded aerospace once.","L:German");
+e("rwth",0,"RWTH Aachen","Germany","low","~€350 semester fee","Usually 15 Jul 2027","Bachelor's in German.","L:German");
+e("kit",0,"KIT Karlsruhe","Germany","low","~€1,500 per semester for non-EU","Usually 15 Jul 2027","Bachelor's in German.","L:German");
+e("tub",0,"TU Berlin","Germany","low","~€350 semester fee","Usually 15 Jul 2027","Bachelor's in German.","L:German");
+e("eth",0,"ETH Zurich","Switzerland","state","~CHF 1.5k/yr, may rise","~30 Apr 2027 (verify)","German-taught bachelor's and an entrance exam. Falls under the top-10 rule.","L:German");
+e("epfl",0,"EPFL","Switzerland","low","~CHF 1.5–2.5k/yr","~30 Apr 2027 (verify)","French-taught bachelor's.","L:French");
+
+const RK = {
+  mit:"QS 2027 #1", imp:"QS 2027 #2", stan:"QS 2027 #2", harv:"QS 2027 #5", camb:"QS 2027 #6", ucl:"QS 2027 #8", eth:"QS 2027 #8", hku:"QS 2027 #11", ntu:"QS 2027 #12", yale:"QS 2027 #16",
+  princ:"≈ Top 30", dart:"≈ Top 250", col:"≈ Top 25", cal:"≈ Top 15", corn:"≈ Top 25", brown:"≈ Top 100", penn:"≈ Top 25", duke:"≈ Top 60", nw:"≈ Top 50", uchi:"≈ Top 20",
+  rice:"≈ Top 150", vand:"≈ Top 200", wust:"≈ Top 200", nd:"≈ Top 300", berk:"≈ Top 20", gt:"≈ Top 100", uiuc:"≈ Top 70", uwm:"≈ Top 100", ucsd:"≈ Top 60", umich:"≈ Top 40", utaus:"≈ Top 70", tamu:"≈ Top 200", umn:"≈ Top 200", gwu:"≈ Top 300", iowa:"≈ Top 400",
+  pearson:"≈ Top 30", ubc:"≈ Top 50", mcg:"≈ Top 40", wat:"≈ Top 70", ualb:"≈ Top 120", calg:"≈ Top 200", mcm:"≈ Top 200", sfu:"≈ Top 300",
+  edi:"≈ Top 40", kcl:"≈ Top 40", bham:"≈ Top 100", manc:"≈ Top 50", leeds:"≈ Top 100", glas:"≈ Top 100", war:"≈ Top 100", bris:"≈ Top 80", soton:"≈ Top 150", stand:"≈ Top 150", bath:"≈ Top 150", qmul:"≈ Top 150", newc:"≈ Top 150", york:"≈ Top 300",
+  cuhk:"≈ Top 40", hkust:"≈ Top 50", polyu:"≈ Top 70", nus:"≈ Top 15", sjtu:"≈ Top 60", zju:"≈ Top 50", csc:"Peking #13, Tsinghua #14", kaist:"≈ Top 70", snu:"≈ Top 40", unist:"≈ Top 300", tech:"≈ Top 300", mon:"≈ Top 50",
+  polimi:"≈ Top 150", polito:"≈ Top 300", trento:"≈ Top 400", sap:"≈ Top 150", bol:"≈ Top 150", uc3m:"≈ Top 700", upf:"≈ Top 400", upc:"≈ Top 400", ub:"≈ Top 200", uam:"≈ Top 250",
+  xp:"≈ Top 50", ipp:"≈ Top 60", saclay:"≈ Top 80", sorb:"≈ Top 100", psl:"≈ Top 30", kul:"≈ Top 70", uva:"≈ Top 60", delft:"≈ Top 60", eras:"≈ Top 200", tue:"≈ Top 150", twente:"≈ Top 200", gron:"≈ Top 150",
+  jku:"≈ Top 600", tuw:"≈ Top 200", ctu:"≈ Top 500", char:"≈ Top 300", wut:"≈ Top 700", tartu:"≈ Top 400", tcd:"≈ Top 150", ucd:"≈ Top 150",
+  tum:"≈ Top 30", rwth:"≈ Top 150", kit:"≈ Top 150", tub:"≈ Top 200", epfl:"≈ Top 30", sh:"BME, ELTE ≈ 500–800"
+};
+// State Program: bachelor's winners in the list you sent [total, computing-type]
+const DP = {
+  edi:[59,"Artificial Intelligence and CS 14, CS and Math 5, plus chemical and mechanical engineering"], hku:[33,"Computer Science 14, mechanical engineering 5"],
+  bham:[22,"Artificial Intelligence and CS 11, economics 5"], kcl:[22,"Artificial Intelligence 7, Computer Science 5"],
+  manc:[18,"Computer Science 3, mathematics 2, economics and others"], imp:[17,"Chemical engineering 5, electrical and electronic 3, data science 2"],
+  ucl:[13,"Computer Science 3, electrical and electronic 3"], kul:[12,"Engineering technology 10, computer technology 2"], nus:[12,"Chemical engineering 5, Computer Science 2"],
+  berk:[11,"Data Science 3, Computer Science 1, EECS 1"], glas:[11,"Economics 5, robotics and AI 2"], leeds:[9,"Computer Science 9"], war:[8,"Economics 4, Computer Science 2"],
+  cuhk:[7,"Computer Science and Engineering 3"], bris:[7,"Economics and Accounting 3, electrical engineering 2"], col:[7,"Computer Engineering 1, Data Science 1, others"],
+  sjtu:[6,"Electrical and computer engineering 3, Computer Science 2"], soton:[4,"Artificial Intelligence 2, chemical engineering 2"], ntu:[4,"Computer Science 1, electrical 1"],
+  pearson:[4,"Computer Science 2, civil 1, life sciences 1"], uva:[3,"Business analytics, econometrics and data science, actuarial science"], kaist:[3,"Mathematics and CS, Computer Engineering, Computer Science"],
+  stan:[3,"Computer Science 1, engineering physics 1, aeronautics 1"], uiuc:[3,"Electrical and aerospace engineering"], gt:[3,"Computer Science 1, Computer and Information Science 1, civil 1"],
+  qmul:[2,"Economics"], mcg:[2,"Physics, earth, math and computer sciences 2"], ubc:[2,"Physics and applied sciences"], ualb:[2,"Computer Science 2"], sap:[2,"Applied CS and AI 1, building engineering 1"],
+  zju:[2,"Electronic and computer engineering, electrical automation"], polyu:[2,"Aviation engineering"], snu:[2,"Computer Science and Engineering 1, economics 1"],
+  newc:[1,"Architecture"], uwm:[1,"Computer Science"], umn:[1,"Biomedical engineering"], tamu:[1,"Petroleum engineering"], umich:[1,"Economics"], ucsd:[1,"Electrical engineering"],
+  gwu:[1,"Computer Engineering"], utaus:[1,"Oil and gas engineering"], iowa:[1,"Animal science"], calg:[1,"Computer Science"], eras:[1,"Economics and business"], tcd:[1,"Biology"],
+  york:[1,"Economics and finance"], camb:[1,"Economics"], mon:[1,"Computer Science"], sejong:[1,"Computer Science Engineering"], unist:[1,"Electrical engineering"], tech:[1,"Mechanical engineering"],
+  tum:[1,"Aerospace"], eth:[1,"Environmental engineering"], mit:[1,"Chemical engineering"], harv:[1,"Government"]
+};
+const DPC = [["United Kingdom",195],["Hong Kong and China",51],["USA",39],["Singapore",16],["Canada",12],["Belgium",12],["South Korea",7],["Netherlands",4],["Italy",2],["Switzerland",2],["Germany",1],["Ireland",1],["Israel",1],["Australia",1]];
+
+const TL = [
+  { d:"1 Nov 2026", hot:1, w:"US early rounds", h:"MIT early action. Choose one of Harvard, Yale or Princeton. Needs essay, recs, SAT, IELTS, CSS Profile." },
+  { d:"This week", hot:1, w:"Ask his school for transcript, recommendations and the UofT Pearson nomination", h:"Also collect the stamped IELTS report." },
+  { d:"~30 Nov 2026", w:"UC Berkeley and UC San Diego", h:"UC application window closes at the end of November." },
+  { d:"~15 Dec 2026", w:"Berea College", h:"Confirm the date on their site." },
+  { d:"1–8 Jan 2027", w:"US regular decision", h:"Most full-aid schools close in the first week of January." },
+  { d:"~14 Jan 2027", w:"UK UCAS", h:"One application, up to five choices." },
+  { d:"~15 Jan 2027", hot:1, w:"Stipendium Hungaricum", h:"Application closes 14:00 CET. Azerbaijan's sending partner deadline is earlier." },
+  { d:"~15 Jan 2027", w:"Canada, TU Delft", h:"UBC, McGill and others. Dates to verify." },
+  { d:"~1 Feb 2027", w:"Ireland CAO, Waterloo", h:"Dates to verify on official pages." },
+  { d:"Jan – Mar 2027", w:"Italy and France", h:"Universitaly pre-enrolment plus entrance tests. Campus France for French schools." },
+  { d:"Jan – Jun 2027", w:"Spain, Poland, Czechia, Estonia, Austria, Belgium", h:"Rounds vary by school." },
+  { d:"Jan – Apr 2027", w:"CSC, KAIST and Chinese universities", h:"Embassy or portal tracks, dates vary." },
+  { d:"Summer 2027", hot:1, w:"Dövlət Proqramı application", h:"Needs an admission letter first. The 2023 call closed in mid-July. Confirm the 2027 dates." },
+  { d:"Jun – Jul 2027", w:"Hungary results", h:"Long wait with few updates." }
+];
+
+const TASKS = [
+  ["Pick which of Harvard, Yale or Princeton gets the 1 Nov early round", "Their early rounds exclude each other. MIT early action is separate."],
+  ["Go to the IELTS test center and collect the stamped test report form", "Ask for extra copies and the online verification number."],
+  ["Ask his school for the transcript, two teacher recommendations and the UofT Pearson nomination", "Give them the deadlines in the Dates tab."],
+  ["Create the Common App, UCAS and College Board accounts", "Common App also needs the fee waiver request."],
+  ["Collect olympiad and competition certificates, with years and ranks", "Add each one under Achievements. A medal can exempt him from the DİM exam."],
+  ["Contact Azerbaijan's Stipendium Hungaricum sending partner for their deadline", "It is earlier than 15 January."],
+  ["Choose the five UK schools for UCAS", "Edinburgh, KCL, Imperial, UCL and one more is the start."]
+];
+
+const DOCS = [
+  { id:"ielts", n:"IELTS test report form with the test center's stamp", sm:"Plus extra copies and the online verification number", where:"The test center where he took it. Go in person.", fr:"All schools. Also the State Program C1 certificate", due:"This week" },
+  { id:"sat", n:"SAT score report", sm:"Sent to each school that asks", where:"College Board account: send scores to each school.", fr:"US schools, Hong Kong, State Program (can replace DİM)", due:"Before 1 Nov for early schools" },
+  { id:"trans", n:"School transcript in English", sm:"Certified translation, notarized or apostilled if asked", where:"His school office, then a certified translator. Check ASAN Xidmət for apostille.", fr:"All schools", due:"Before 1 Nov" },
+  { id:"cert", n:"School completion certificate or proof of final year", sm:"The final certificate comes after graduation", where:"His school. Ask for a confirmation letter for now.", fr:"All schools and the State Program", due:"Confirmation letter now, final in summer" },
+  { id:"pass", n:"Passport", sm:"Valid at least six months past the start of study", where:"ASAN Xidmət if it needs renewing.", fr:"All schools", due:"Check expiry this week" },
+  { id:"recs", n:"Two teacher recommendations and one counselor form", sm:"For the Common App, and the reference for UCAS", where:"His school. Give them the form instructions and the dates.", fr:"US schools, UK, Canada", due:"Ask by 26 Oct" },
+  { id:"essay", n:"Personal essay and school supplements", sm:"Common App essay, then each school's short answers", where:"We write it together. First draft within a week.", fr:"US schools", due:"Draft by 31 Oct for early schools" },
+  { id:"ucas", n:"UCAS personal statement", sm:"One statement for all five UK choices", where:"We write it together.", fr:"UK schools", due:"Draft in November" },
+  { id:"olymp", n:"Olympiad and competition certificates", sm:"Scans plus English translation", where:"His school or the olympiad organizer.", fr:"All schools and the State Program (medal exemption)", due:"This week" },
+  { id:"css", n:"CSS Profile and family income documents", sm:"Income, tax and employer letters, translated into English", where:"Parents gather the papers. We fill the CSS Profile online.", fr:"Every full-need US school", due:"Before 1 Jan, earlier for early rounds" },
+  { id:"hu", n:"Hungary package", sm:"Motivation letter, CV, language certificate, medical certificate, school documents", where:"DreamApply portal. The sending partner nominates him.", fr:"Stipendium Hungaricum", due:"Early Dec to be safe" },
+  { id:"dp", n:"Dövlət Proqramı package", sm:"Admission letter, language certificate, DİM result or exemption proof, health form AZS-086/1, military deferral document", where:"app.dp.edu.az, the clinic for the health form, ASAN Xidmət for the deferral.", fr:"State Program", due:"Summer 2027" },
+  { id:"birth", n:"Birth certificate with translation", sm:"Some schools and consulates ask for it", where:"ASAN Xidmət or the registry office.", fr:"Italy, Hungary, visa later", due:"December" },
+  { id:"photo", n:"Passport-style photos", sm:"Digital and printed", where:"Any photo studio.", fr:"Several applications", due:"December" },
+  { id:"waiver", n:"Application fee waivers", sm:"Common App waiver is based on family income", where:"His counselor confirms it, then request in the Common App.", fr:"US schools", due:"Before submitting" }
+];
+
+const KEY = "aykhan-apps-2027-v4";
+const DEFPEOPLE = [
+  { n:"School counselor", r:"Counselor form, transcript, UofT Pearson nomination", s:"no" },
+  { n:"Teacher 1", r:"Recommendation, math or science", s:"no" },
+  { n:"Teacher 2", r:"Recommendation, humanities or computer science", s:"no" },
+  { n:"Azerbaijan Stipendium Hungaricum sending partner", r:"Nomination and their own deadline", s:"no" },
+  { n:"IELTS test center", r:"Stamped test report form", s:"no" }
+];
+let state = { st:{}, tasks:{}, docs:{}, steps:{}, custom:{}, notes:{}, offer:{}, chosen:"", people:null,
+  ach:["GPA 4.9–5.0 out of 5, A and A+ grades", "SAT 1380", "IELTS 7.0", "Olympiad and competitive programming experience (add medals, ranks and years)"] };
+try { const r = localStorage.getItem(KEY); if (r) state = Object.assign(state, JSON.parse(r)); } catch (x) {}
+if (!state.people) state.people = DEFPEOPLE.map((p) => Object.assign({}, p));
+function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (x) {} }
+
+// Application systems and the steps each one needs
+const SYS = {
+  commonapp:{ n:"Common App", fee:"~$75–90, waiver available", feeN:80, steps:[
+    ["Add this school in your Common App", "Create the account once. Profile, family and school sections copy to every school."],
+    ["Write this school's supplement", "Most schools ask for one or more short essays. Reuse ideas, but answer each question directly."],
+    ["Counselor form, transcript and two teacher recommendations", "Invite them from the Common App and give them this school's deadline."],
+    ["Send SAT scores", "Use College Board Score Send, or self-report if the school allows. Check this school's test policy."],
+    ["Send IELTS", "Official report or test report form number. Check this school's minimum."],
+    ["Financial aid forms", "CSS Profile and any extra school form, with the parents' income documents. Apply for aid together with admission."],
+    ["Pay the fee or use a waiver", "Request the waiver in the Common App before paying."],
+    ["Submit, then check the portal", "Look for missing items a few days later. Some schools offer an alumni interview."],
+    ["Mid-year report", "The school sends first-term grades in January or February."] ] },
+  mit:{ n:"MIT application", fee:"$75, waiver available", feeN:75, steps:[
+    ["Create a myMIT account", "MIT has its own application, not the Common App."],
+    ["Write the short essays and activity answers", "MIT asks several short questions instead of one long essay."],
+    ["Two teacher recommendations and the counselor form", "One recommender should teach math or science."],
+    ["Send SAT or ACT scores", "MIT requires one of them."],
+    ["Send IELTS", "Official report or test report form number."],
+    ["Financial aid forms", "CSS Profile and family income documents."],
+    ["Optional: maker portfolio", "A good place for his programming and olympiad projects."],
+    ["Pay the fee or use a waiver", "Ask for the waiver before paying."],
+    ["Alumni interview", "MIT offers one after you apply."] ] },
+  ucapp:{ n:"UC application", fee:"~$80 per campus", feeN:80, steps:[
+    ["Create a UC application account", "Choose the campus and the major at application time."],
+    ["Enter grades yourself", "UC takes self-reported grades. Keep the transcript ready in case they ask."],
+    ["Answer four personal insight questions", "Choose four of the eight prompts."],
+    ["Do not send SAT scores", "UC does not consider test scores."],
+    ["Send IELTS", "Check the minimum for the campus."],
+    ["Pay the fee per campus", "Fee waiver is possible for low income."],
+    ["Submit by the end of November", "No recommendations are needed unless asked later."] ] },
+  ucas:{ n:"UCAS", fee:"~£30 once for all choices", feeN:35, once:1, steps:[
+    ["Register on UCAS and add this course", "Up to five choices in total."],
+    ["Write the personal statement", "One statement goes to all choices. It answers three questions about motivation, preparation and skills."],
+    ["Reference from his school", "A teacher or counselor writes it, with grades and predictions where needed."],
+    ["Certified English transcript", "Translated school transcript, uploaded or sent as the school asks."],
+    ["Prove English", "IELTS, usually 6.5 to 7.0 overall for computing. Check the course page."],
+    ["Check the entry qualification for Azerbaijan", "A foundation year or extra tests may be required. Check the school's country page."],
+    ["Check for an admissions test", "Some courses require MAT, TMUA or similar."],
+    ["Pay the UCAS fee and submit", "One payment covers all choices."],
+    ["Reply to offers", "Choose a firm and an insurance choice when offers arrive."],
+    ["Scholarship forms", "Many scholarships have their own deadline after the offer."] ] },
+  dreamapply:{ n:"Stipendium Hungaricum portal", fee:"None", feeN:0, steps:[
+    ["Register on the Stipendium Hungaricum portal", "apply.stipendiumhungaricum.hu"],
+    ["Choose up to two English-taught programs", "Rank them. Check each program's own extra requirements."],
+    ["Upload documents", "Passport, school certificate, transcript, motivation letter, CV, IELTS, photo, medical certificate."],
+    ["Get the Azerbaijan sending partner's nomination", "They have an earlier deadline. Ask what forms they need."],
+    ["Submit before 15 January, 14:00 CET", "No extensions."],
+    ["Prepare for interviews", "Some universities interview online between March and May."],
+    ["Medical certificate", "Due by 15 April if not uploaded earlier."] ] },
+  universitaly:{ n:"Universitaly + school portal", fee:"~€30–100, varies", feeN:60, steps:[
+    ["Check the program is in English and open to non-EU", "On the school's page, with the entrance test dates."],
+    ["Pre-enrol on Universitaly", "Non-EU applicants declare their visa intent here."],
+    ["Apply on the university's own portal", "Each school has its own form and fee."],
+    ["Book and take the entrance test", "TOL for Politecnico di Milano, TOLC or similar elsewhere."],
+    ["Get the school documents verified", "Translated documents. Some schools ask for a declaration of value."],
+    ["Apply for the regional scholarship", "Separate form with a family income certificate."],
+    ["Check the 12-years-of-school rule", "An Azerbaijani school certificate may need an extra year."] ] },
+  cao:{ n:"CAO (Ireland)", fee:"~€45", feeN:45, steps:[
+    ["Create a CAO account", "Non-EU applicants use the main route, deadline around 1 February."],
+    ["Choose courses", "Up to ten on the CAO list."],
+    ["Send documents", "Translated transcript and IELTS."],
+    ["Check the school's international scholarship", "Trinity and UCD each have their own."] ] },
+  campusfrance:{ n:"Campus France", fee:"~€50", feeN:50, steps:[
+    ["Create an Études en France account", "Used for most non-EU applicants."],
+    ["Check the language", "Most bachelor's are in French. Look for English tracks."],
+    ["Upload documents", "Transcript, translated certificates, language test."],
+    ["Campus France interview", "Held in Baku."] ] },
+  spain:{ n:"Spanish pre-enrolment", fee:"~€100", feeN:100, steps:[
+    ["Get the UNEDasiss credential", "Education ministry accreditation for non-EU applicants. Start early."],
+    ["Register on the school's pre-enrolment portal", "Deadlines often fall between March and June."],
+    ["Check the language", "Most degrees are in Spanish. Look for English tracks."],
+    ["Send documents", "Transcript, passport, IELTS."] ] },
+  csc:{ n:"CSC portal", fee:"None", feeN:0, steps:[
+    ["Choose universities and a track", "Apply to the universities and the CSC at the same time."],
+    ["Create an account on the CSC portal", "The university track needs the agency number of the university."],
+    ["Embassy track", "Contact the Chinese embassy in Baku for dates."],
+    ["Documents", "Transcript, medical form, recommendation letters, study plan."] ] },
+  direct:{ n:"School's own portal", fee:"varies, ~€50", feeN:50, steps:[
+    ["Create an account on the school's application portal", "Use one email address for everything."],
+    ["Check the course requirements", "Language minimum, grades and tests."],
+    ["Upload documents", "Transcript with translation, passport, IELTS, SAT where asked."],
+    ["Write the personal statement or motivation letter", "Some schools ask for a short essay."],
+    ["Pay the fee and submit", "The fee varies by school."],
+    ["Scholarship forms", "Many are separate and have earlier deadlines."] ] }
+};
+const UKIDS = ["edi","kcl","imp","ucl","bham","manc","leeds","glas","war","bris","soton","stand","bath","qmul","newc","york","camb"];
+const ITIDS = ["polimi","polito","trento","sap","bol"];
+function sysKey(s) {
+  if (s.id === "mit") return "mit";
+  if (s.id === "berk" || s.id === "ucsd") return "ucapp";
+  if (s.id === "sh") return "dreamapply";
+  if (s.id === "csc") return "csc";
+  if (UKIDS.includes(s.id)) return "ucas";
+  if (ITIDS.includes(s.id)) return "universitaly";
+  if (s.c === "Ireland") return "cao";
+  if (s.c === "France") return "campusfrance";
+  if (s.c === "Spain") return "spain";
+  if (s.c === "USA") return "commonapp";
+  return "direct";
+}
+const EX = {
+  mit:[["Early Action or Regular", "Early Action closes 1 November and is not binding. Regular closes in early January."]],
+  harv:[["Choose early or regular", "Restrictive early action on 1 November limits other private early rounds."]],
+  yale:[["Choose early or regular", "Single-choice early action on 1 November limits other private early rounds."]],
+  princ:[["Choose early or regular", "Single-choice early action on 1 November limits other private early rounds."]],
+  berk:[["Choose the major carefully", "UC majors are picked at application, and computer science is hard to switch into."]],
+  ucsd:[["Choose the major carefully", "Majors are picked at application."]],
+  wat:[["Fill in the Admission Information Form", "Computer Science asks for this extra form. Check the Waterloo page."]],
+  pearson:[["Ask the school for the nomination", "The school nominates, not the student. Ask this week."]],
+  imp:[["Check for the admissions test", "Computing courses may need a test. Check the course page."]],
+  polimi:[["Book the TOL test", "The entrance test for engineering. Check the dates for your round."]],
+  xp:[["Check the BSc application steps on the Polytechnique site", "Includes an online application and tests or interviews."]],
+  sh:[["Choose the two programs together", "Look at BME, ELTE, Szeged and Debrecen computer science options."]]
+};
+const REG = {
+  USA:["English: IELTS or another accepted test. Check the minimum for this school.", "Tests: most selective schools ask for SAT or ACT again. UC schools do not look at tests.", "Aid: international aid needs the CSS Profile and family income proof."],
+  UK:["Entry qualification: check the country page for Azerbaijan. A foundation year may be needed.", "English: IELTS, usually 6.5 to 7.0 overall.", "UCAS allows five choices in total."],
+  Canada:["English: IELTS minimum depends on the faculty.", "Grades: the school converts the Azerbaijani certificate. Check the equivalency page.", "Co-op and entrance awards often have a separate form."],
+  "Hong Kong":["SAT scores are accepted. IELTS minimum is usually 6.5 or higher.", "Scholarships are often assessed from the application itself.", "Interviews may follow."],
+  Singapore:["SAT and IELTS are accepted.", "Tuition grants come with a work bond. Read it before accepting."],
+  China:["Language: English-taught programs need IELTS or similar.", "A prep year may be funded."],
+  Hungary:["Two programs per application.", "Nomination by the sending partner is separate."],
+  Italy:["Entrance test is required for most engineering programs.", "Check the 12-years-of-school rule.", "Regional scholarship needs a separate form."],
+  Spain:["The UNEDasiss credential is needed for non-EU applicants.", "Check the program language."],
+  France:["Most bachelor's are taught in French.", "Campus France handles the application."],
+  Germany:["Bachelor's are usually in German and need German C1.", "The Azerbaijani certificate may need Studienkolleg."],
+  Austria:["Check language of instruction.", "Non-EU fee is about €1,450 a year."],
+  Switzerland:["Entrance exam is likely for his certificate.", "German or French is needed for bachelor's."],
+  Netherlands:["Check recognition of the Azerbaijani certificate.", "Fees are high for non-EU students without aid."],
+  Belgium:["Check the language of instruction.", "State Program has funded many engineering technology students here."],
+  Ireland:["CAO deadline is around 1 February.", "Scholarships are partial."]
+};
+const LINK = {
+  mit:"https://mitadmissions.org", harv:"https://college.harvard.edu/admissions", yale:"https://admissions.yale.edu", princ:"https://admission.princeton.edu",
+  stan:"https://admission.stanford.edu", col:"https://undergrad.admissions.columbia.edu", berk:"https://admissions.berkeley.edu", gt:"https://admission.gatech.edu", uiuc:"https://admissions.illinois.edu",
+  edi:"https://www.ed.ac.uk/studying/undergraduate", ucl:"https://www.ucl.ac.uk/prospective-students/undergraduate", imp:"https://www.imperial.ac.uk/study", kcl:"https://www.kcl.ac.uk/study/undergraduate",
+  hku:"https://admissions.hku.hk", nus:"https://www.nus.edu.sg/oam", ntu:"https://www.ntu.edu.sg/admissions", sh:"https://stipendiumhungaricum.hu",
+  polimi:"https://www.polimi.it", polito:"https://www.polito.it", trento:"https://www.unitn.it", pearson:"https://future.utoronto.ca", ubc:"https://you.ubc.ca",
+  mcg:"https://www.mcgill.ca/undergraduate-admissions", wat:"https://uwaterloo.ca/future-students", kaist:"https://www.kaist.ac.kr", csc:"https://studyinchina.csc.edu.cn",
+  tum:"https://www.tum.de", rwth:"https://www.rwth-aachen.de", kit:"https://www.kit.edu", tub:"https://www.tu.berlin", eth:"https://ethz.ch", epfl:"https://www.epfl.ch",
+  delft:"https://www.tudelft.nl", uva:"https://www.uva.nl", kul:"https://www.kuleuven.be", tcd:"https://www.tcd.ie", jku:"https://www.jku.at", ctu:"https://www.cvut.cz", uc3m:"https://www.uc3m.es"
+};
+const AIDHELP = {
+  free:"Tuition is free. Check the monthly stipend and housing support.",
+  full:"A scholarship covers everything. Apply for it separately and on time.",
+  need:"File the CSS Profile with the application. The school covers what the family cannot pay. Check whether it is need-blind or need-aware.",
+  state:"Full price unless the State Program pays. Apply to the State Program after you have the admission letter.",
+  part:"A partial award. The amount arrives with the offer. Check the school's scholarship page and its deadline.",
+  low:"Tuition is low even without an award. Check regional or merit scholarships for living costs.",
+  pay:"No known funding route. Apply only if you want the extra option."
+};
+const DD = {
+  mit:"2026-11-01", harv:"2026-11-01", yale:"2026-11-01", princ:"2026-11-01", gt:"2026-11-01", uiuc:"2026-11-01",
+  berk:"2026-11-30", ucsd:"2026-11-30", pearson:"2026-11-15", ber:"2026-12-15",
+  amh:"2027-01-01", col:"2027-01-01", vand:"2027-01-01", mid:"2027-01-01", wes:"2027-01-01", grin:"2027-01-01",
+  dart:"2027-01-02", corn:"2027-01-02", duke:"2027-01-02", uchi:"2027-01-02", wust:"2027-01-02", dav:"2027-01-02",
+  cal:"2027-01-03", nw:"2027-01-03", rice:"2027-01-04", swat:"2027-01-04",
+  bow:"2027-01-05", stan:"2027-01-05", brown:"2027-01-05", penn:"2027-01-05", nd:"2027-01-05", hmc:"2027-01-05", will:"2027-01-08", pomo:"2027-01-08",
+  edi:"2027-01-14", kcl:"2027-01-14", imp:"2027-01-14", ucl:"2027-01-14", bham:"2027-01-14", manc:"2027-01-14", leeds:"2027-01-14", glas:"2027-01-14", war:"2027-01-14",
+  bris:"2027-01-14", soton:"2027-01-14", stand:"2027-01-14", bath:"2027-01-14", qmul:"2027-01-14", newc:"2027-01-14", york:"2027-01-14",
+  sh:"2027-01-15", delft:"2027-01-15", ubc:"2027-01-15", mcg:"2027-01-15", mcm:"2027-01-15", sfu:"2027-01-15", wat:"2027-02-01", tcd:"2027-02-01", ucd:"2027-02-01"
+};
+const FIXRK = { csc:["#13", "QS", 1], sh:["500+", "QS", 0] };
+const TESTS = [
+  ["SAT", "Have 1380", "Needed for most US schools and Hong Kong. Retake only if a target school's median is far above. Check College Board dates."],
+  ["IELTS", "Have 7.0", "Stamped report is still to collect. Retake for 7.5 only if a program asks."],
+  ["DİM exam", "State Program", "Needed unless a high SAT or an olympiad medal exempts him."],
+  ["TOL entrance test", "Politecnico di Milano", "Book early. Other Italian schools use similar tests."]
+];
+
+const $ = (s) => document.querySelector(s);
+const $$ = (s) => Array.from(document.querySelectorAll(s));
+const esc = (t) => String(t).replace(/[&<>"]/g, (c) => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;" }[c]));
+const STATUS = [["todo","To do"],["prog","In progress"],["done","Submitted"],["offer","Offer"],["wait","Waitlisted"],["rej","Rejected"],["skip","Skipped"]];
+const SUBMITTED = ["done","offer","wait","rej"];
+const byId = (id) => S.find((s) => s.id === id);
+const stOf = (id) => state.st[id] || "todo";
+let view = "all", sort = "priority", mode = "cards", q = "", hideSkip = false, dview = "all", current = "";
+
+function rankNum(id) {
+  const r = RK[id]; if (!r) return 99999;
+  if (FIXRK[id]) return 13;
+  const m = r.match(/#(\d+)/) || r.match(/Top (\d+)/);
+  return m ? +m[1] : (/liberal/i.test(r) ? 5000 : 99999);
+}
+function rankBox(id) {
+  const r = RK[id];
+  if (FIXRK[id]) return `<div class="rkbox ex"><b>${FIXRK[id][0]}</b><span>${FIXRK[id][1]}</span></div>`;
+  if (!r) return `<div class="rkbox"><b>–</b><span>QS</span></div>`;
+  const ex = /QS 2027/.test(r), m = r.match(/#(\d+)/) || r.match(/Top (\d+)/);
+  if (m) return `<div class="rkbox${ex ? " ex" : ""}"><b>${ex ? "#" : "Top "}${m[1]}</b><span>QS${ex ? " 2027" : " ≈"}</span></div>`;
+  return `<div class="rkbox"><b>LAC</b><span>US</span></div>`;
+}
+const daysTo = (iso) => Math.ceil((new Date(iso + "T23:59:00") - new Date()) / 86400000);
+function dayChip(id) {
+  if (!DD[id]) return "";
+  const n = daysTo(DD[id]);
+  if (n < 0) return '<span class="days late">passed</span>';
+  return `<span class="days${n <= 14 ? " soon" : ""}">${n} day${n === 1 ? "" : "s"} left</span>`;
+}
+function stepsFor(s) { const k = sysKey(s); return (EX[s.id] || []).concat(SYS[k].steps); }
+function stepProg(id) {
+  const s = byId(id), st = stepsFor(s), c = state.custom[id] || [], m = state.steps[id] || {};
+  let done = 0; st.forEach((x, i) => { if (m[i]) done++; }); c.forEach((x, i) => { if (m["c" + i]) done++; });
+  return [done, st.length + c.length];
+}
+
+function counts() {
+  const sub = S.filter((s) => SUBMITTED.includes(stOf(s.id))).length;
+  $("#n-sub").textContent = sub; $("#n-all").textContent = S.length;
+  $("#meter").style.width = (S.length ? (sub / S.length) * 100 : 0) + "%";
+}
+function balance() {
+  const m = {}; S.forEach((s) => { m[s.c] = (m[s.c] || 0) + 1; });
+  $("#bal").innerHTML = Object.entries(m).sort((a, b) => b[1] - a[1]).map(([c, n]) => `<span>${esc(c)} ${n}</span>`).join("");
+}
+function matches(s) {
+  if (hideSkip && stOf(s.id) === "skip") return false;
+  if (view === "state") { if (!DP[s.id]) return false; }
+  else if (view !== "all" && String(s.p) !== view) return false;
+  const hay = (s.n + " " + s.c).toLowerCase();
+  return !q || hay.includes(q);
+}
+const GROUPS = [[1,"Priority 1","Apply for sure."],[2,"Priority 2","Strong options."],[3,"Priority 3","Add if time and fees allow."],[0,"No priority","Still on the list. Apply if you want the extra shot."]];
+function sorter() {
+  const dl = (s) => DD[s.id] ? new Date(DD[s.id]).getTime() : 9e15;
+  const f = { rank:(a, b) => rankNum(a.id) - rankNum(b.id), deadline:(a, b) => dl(a) - dl(b), funded:(a, b) => ((DP[b.id] || [0])[0]) - ((DP[a.id] || [0])[0]),
+    country:(a, b) => a.c.localeCompare(b.c) || rankNum(a.id) - rankNum(b.id), name:(a, b) => a.n.localeCompare(b.n) };
+  return f[sort] || (() => 0);
+}
+
+function rowHtml(s) {
+  const v = stOf(s.id), fl = s.fl.split(" "), lang = fl.find((f) => f.startsWith("L:"));
+  const tags = (s.p ? `<span class="tag p${s.p}">P${s.p}</span>` : "") + (fl.includes("R") ? '<span class="tag reach">reach</span>' : "") + (lang ? `<span class="tag lang">needs ${esc(lang.slice(2))}</span>` : "");
+  const a = AID[s.aid], d = DP[s.id], pr = stepProg(s.id);
+  return `<div class="row${v === "done" ? " done" : ""}${v === "skip" ? " skip" : ""}">
+    ${rankBox(s.id)}
+    <div class="nm"><button class="lnk" data-open="${s.id}">${esc(s.n)}</button>${tags}<em>${esc(s.c)}</em></div>
+    <div class="cell"><span class="k">Funding</span><span class="badge ${a[1]}">${a[0]}</span>${esc(s.cost)}</div>
+    <div class="cell"><span class="k">Deadline</span><span class="mono">${esc(s.dl)}</span>${dayChip(s.id)}</div>
+    <div class="cell st"><span class="k">Status</span><select data-id="${s.id}" aria-label="Status for ${esc(s.n)}">${STATUS.map(([x,y]) => `<option value="${x}"${x===v?" selected":""}>${y}</option>`).join("")}</select></div>
+    ${d ? `<div class="dpn">State Program has funded ${d[0]} bachelor's here: ${esc(d[1])}.</div>` : ""}
+    <div class="note"><button class="lnk sm" data-open="${s.id}">School page: ${pr[0]} of ${pr[1]} steps done</button>${s.note ? " · " + esc(s.note) : ""}</div>
+  </div>`;
+}
+function tableHtml(items) {
+  return `<div class="tblwrap"><table class="tbl"><thead><tr><th>Rank</th><th>School</th><th>Country</th><th>Funding</th><th>Deadline</th><th>State</th><th>P</th><th>Status</th></tr></thead><tbody>` +
+    items.map((s) => `<tr><td>${rankBox(s.id)}</td><td><button class="lnk" data-open="${s.id}">${esc(s.n)}</button></td><td>${esc(s.c)}</td><td><span class="badge ${AID[s.aid][1]}">${AID[s.aid][0]}</span></td><td class="mono">${esc(DD[s.id] || s.dl)}</td><td class="mono">${DP[s.id] ? DP[s.id][0] : ""}</td><td>${s.p ? "P" + s.p : ""}</td>
+      <td><select data-id="${s.id}" aria-label="Status for ${esc(s.n)}">${STATUS.map(([x,y]) => `<option value="${x}"${x===stOf(s.id)?" selected":""}>${y}</option>`).join("")}</select></td></tr>`).join("") + `</tbody></table></div>`;
+}
+function renderList() {
+  const el = $("#list"); el.innerHTML = "";
+  const items = S.filter(matches);
+  if (!items.length) { el.innerHTML = '<p class="sub">No schools match that filter.</p>'; return; }
+  if (mode === "table") { el.innerHTML = tableHtml(sort === "priority" ? items.slice().sort((a, b) => (a.p || 9) - (b.p || 9) || rankNum(a.id) - rankNum(b.id)) : items.slice().sort(sorter())); return; }
+  if (sort === "priority") {
+    GROUPS.forEach(([p, title, hint]) => {
+      const g = items.filter((s) => s.p === p); if (!g.length) return;
+      const box = document.createElement("div"); box.className = "group";
+      box.innerHTML = `<h3>${title} <small>${g.length} · ${hint}</small></h3>` + g.map(rowHtml).join(""); el.appendChild(box);
+    });
+  } else {
+    const box = document.createElement("div"); box.className = "group";
+    box.innerHTML = `<h3>${items.length} schools <small>sorted by ${sort}</small></h3>` + items.slice().sort(sorter()).map(rowHtml).join(""); el.appendChild(box);
+  }
+}
+
+function renderTasks() { $("#tasks").innerHTML = TASKS.map((t, i) => `<div class="task"><input type="checkbox" id="t${i}"${state.tasks[i] ? " checked" : ""}><label for="t${i}">${esc(t[0])}<small>${esc(t[1])}</small></label></div>`).join(""); }
+function renderAch() { $("#ach").innerHTML = state.ach.map((a, i) => `<div class="it"><span>${esc(a)}</span><button data-del="${i}" aria-label="Remove">Remove</button></div>`).join(""); }
+function names(list, n) { return list.slice(0, n).map((s) => esc(s.n)).join(", "); }
+function renderGet() {
+  const byAid = (k) => S.filter((s) => k.includes(s.aid));
+  const free = byAid(["free","full"]), need = byAid(["need"]), st = S.filter((s) => DP[s.id]), low = byAid(["low"]);
+  const prio = (list) => list.slice().sort((a, b) => ((a.p || 9) - (b.p || 9)) || rankNum(a.id) - rankNum(b.id));
+  $("#get").innerHTML = [
+    ["Free or fully funded", free.length, prio(free), "Apply to all of these. Hungary is the surest."],
+    ["Full-need aid (US)", need.length, prio(need), "Pays what the family cannot. Few offers, but real full aid."],
+    ["State Program has paid here before", st.length, prio(st), "Full price, but the state may cover it if he is admitted and selected."],
+    ["Low cost tuition", low.length, prio(low), "Tuition about €5k a year or less without any scholarship."]
+  ].map(([t, n, l, h]) => `<div class="card"><span class="k">${t}</span><b class="big">${n} schools</b><span class="small">${h}</span><span class="small">${names(l, 6)}${l.length > 6 ? ", and more" : ""}.</span></div>`).join("");
+}
+function renderNext() {
+  const up = S.filter((s) => DD[s.id] && daysTo(DD[s.id]) >= 0 && !SUBMITTED.includes(stOf(s.id)) && stOf(s.id) !== "skip")
+    .sort((a, b) => DD[a.id].localeCompare(DD[b.id]) || (a.p || 9) - (b.p || 9)).slice(0, 8);
+  $("#next").innerHTML = up.map((s) => `<div class="nx"><span class="mono">${esc(DD[s.id])}</span><button class="lnk" data-open="${s.id}">${esc(s.n)}</button>${dayChip(s.id)}</div>`).join("") || '<p class="sub">Nothing coming up.</p>';
+  const top = S.filter((s) => stOf(s.id) !== "skip" && rankNum(s.id) < 5000).sort((a, b) => rankNum(a.id) - rankNum(b.id)).slice(0, 10);
+  $("#top").innerHTML = top.map((s) => `<div class="nx">${rankBox(s.id)}<button class="lnk" data-open="${s.id}">${esc(s.n)}</button><span class="badge ${AID[s.aid][1]}">${AID[s.aid][0]}</span></div>`).join("");
+  $("#tests").innerHTML = TESTS.map((t) => `<div class="card"><span class="k">${esc(t[0])}</span><b class="big">${esc(t[1])}</b><span class="small">${esc(t[2])}</span></div>`).join("");
+}
+
+function renderDocs() {
+  const label = { need:"Need", doing:"Doing", have:"Have" };
+  const list = DOCS.filter((d) => dview === "all" || (state.docs[d.id] || "need") === dview);
+  $("#doclist").innerHTML = list.map((d) => {
+    const v = state.docs[d.id] || "need";
+    return `<div class="doc${v === "have" ? " have" : ""}">
+      <div class="nm">${esc(d.n)}<small>${esc(d.sm)}</small><div class="due">Due: ${esc(d.due)}</div></div>
+      <div class="cell"><span class="k">Where to get it</span>${esc(d.where)}<span class="k" style="margin-top:6px">Needed for</span>${esc(d.fr)}</div>
+      <div class="cell"><span class="k">Status</span><select data-doc="${d.id}" aria-label="Status for ${esc(d.n)}">${Object.entries(label).map(([x,y]) => `<option value="${x}"${x===v?" selected":""}>${y}</option>`).join("")}</select></div>
+    </div>`;
+  }).join("") || '<p class="sub">Nothing here.</p>';
+}
+function renderPeople() {
+  const lab = [["no","Not asked"],["asked","Asked"],["done","Done"]];
+  $("#people").innerHTML = state.people.map((p, i) => `<div class="doc${p.s === "done" ? " have" : ""}"><div class="nm">${esc(p.n)}<small>${esc(p.r)}</small></div><div class="cell"></div>
+    <div class="cell"><span class="k">Status</span><select data-person="${i}" aria-label="Status for ${esc(p.n)}">${lab.map(([x,y]) => `<option value="${x}"${x===p.s?" selected":""}>${y}</option>`).join("")}</select></div></div>`).join("");
+}
+function renderBars() {
+  const max = Math.max(...DPC.map((x) => x[1]));
+  $("#dpbars").innerHTML = DPC.map(([c, n]) => `<div class="bar-row"><span>${esc(c)}</span><i style="width:${(n / max) * 100}%"></i><span class="n">${n}</span></div>`).join("");
+}
+function renderTL() { $("#tl").innerHTML = TL.map((x) => `<div class="ev${x.hot ? " hot" : ""}"><span class="when">${esc(x.d)}</span><span class="what">${esc(x.w)}</span><span class="how">${esc(x.h)}</span></div>`).join(""); }
+
+function renderDecide() {
+  const offers = S.filter((s) => ["offer","wait"].includes(stOf(s.id)));
+  const o = state.offer;
+  const tot = (id) => { const x = o[id] || {}; return x.net ? (+x.net) * 4 : 0; };
+  offers.sort((a, b) => (state.chosen === a.id ? -1 : state.chosen === b.id ? 1 : 0) || ((+((o[a.id] || {}).net) || 9e9) - (+((o[b.id] || {}).net) || 9e9)));
+  $("#offers").innerHTML = offers.length ? offers.map((s) => {
+    const x = o[s.id] || {};
+    return `<div class="row dec${state.chosen === s.id ? " done" : ""}">${rankBox(s.id)}
+      <div class="nm"><button class="lnk" data-open="${s.id}">${esc(s.n)}</button><em>${esc(s.c)} · ${stOf(s.id) === "wait" ? "Waitlisted" : "Offer"}</em></div>
+      <div class="cell"><span class="k">Scholarship per year</span><input type="text" data-off="${s.id}" data-f="sch" value="${esc(x.sch || "")}" placeholder="Example: full tuition" aria-label="Scholarship for ${esc(s.n)}"></div>
+      <div class="cell"><span class="k">What he pays per year (€)</span><input type="number" min="0" step="100" data-off="${s.id}" data-f="net" value="${esc(x.net || "")}" aria-label="Net cost for ${esc(s.n)}"><span class="small">Four years: ${tot(s.id) ? "€" + tot(s.id).toLocaleString("en") : "–"}</span></div>
+      <div class="cell st"><span class="k">Fit, 1 to 5</span><select data-off="${s.id}" data-f="fit" aria-label="Fit for ${esc(s.n)}">${["","1","2","3","4","5"].map((v) => `<option value="${v}"${(x.fit || "") === v ? " selected" : ""}>${v || "–"}</option>`).join("")}</select>
+        <button class="chip" data-choose="${s.id}" aria-pressed="${state.chosen === s.id}">${state.chosen === s.id ? "Chosen" : "Choose this"}</button></div></div>`;
+  }).join("") : '<p class="sub">No offers yet. When a school answers, set its status to Offer or Waitlisted on the Schools tab and it appears here.</p>';
+  // fee estimate
+  const act = S.filter((s) => ["prog","done","offer","wait","rej"].includes(stOf(s.id)));
+  const g = {}; act.forEach((s) => { const k = sysKey(s); g[k] = g[k] || []; g[k].push(s); });
+  let total = 0;
+  const rows = Object.entries(g).map(([k, l]) => { const sy = SYS[k]; const amt = sy.once ? sy.feeN : sy.feeN * l.length; total += amt; return `<div class="nx"><span>${esc(sy.n)}</span><span class="mono">${l.length} school${l.length === 1 ? "" : "s"}</span><span class="mono">~${amt}</span><span class="small">${esc(sy.fee)}</span></div>`; });
+  $("#fees").innerHTML = (rows.join("") || '<p class="sub">Set a school to In progress and its fee shows up here.</p>') + (rows.length ? `<div class="nx"><b>Rough total</b><span></span><b class="mono">~${total}</b><span class="small">in dollars, euros and pounds mixed. Fee waivers can lower it a lot.</span></div>` : "");
+}
+
+function openSchool(id) {
+  const s = byId(id); if (!s) return; current = id;
+  const a = AID[s.aid], d = DP[id], k = sysKey(s), sy = SYS[k], st = stepsFor(s), cu = state.custom[id] || [], m = state.steps[id] || {}, v = stOf(id);
+  const fl = s.fl.split(" "), lang = fl.find((f) => f.startsWith("L:"));
+  const pr = stepProg(id);
+  const reg = (REG[s.c] || []);
+  $("#sc").innerHTML = `
+    <button class="chip" id="back">← All schools</button>
+    <div class="shead">${rankBox(id)}<div><h2>${esc(s.n)}</h2><p class="sub">${esc(s.c)} · ${s.p ? "Priority " + s.p + " · " : ""}<span class="badge ${a[1]}">${a[0]}</span>${fl.includes("R") ? ' <span class="tag reach">reach</span>' : ""}${lang ? ` <span class="tag lang">needs ${esc(lang.slice(2))}</span>` : ""}</p></div>
+      <div class="shst"><span class="k">Status</span><select data-id="${id}" aria-label="Status">${STATUS.map(([x,y]) => `<option value="${x}"${x===v?" selected":""}>${y}</option>`).join("")}</select></div></div>
+    <div class="two">
+      <div class="card"><h3>What to do (${pr[0]} of ${pr[1]})</h3>
+        <div class="tasks">${st.map((x, i) => `<div class="task"><input type="checkbox" id="s${i}" data-step="${i}"${m[i] ? " checked" : ""}><label for="s${i}">${esc(x[0])}<small>${esc(x[1])}</small></label></div>`).join("")}
+          ${cu.map((x, i) => `<div class="task"><input type="checkbox" id="sc${i}" data-step="c${i}"${m["c" + i] ? " checked" : ""}><label for="sc${i}">${esc(x)}</label></div>`).join("")}</div>
+        <div class="addrow"><input type="text" id="cstep" placeholder="Add your own step for this school" aria-label="Add a step"><button class="btn" id="cadd">Add</button></div>
+      </div>
+      <div class="stack">
+        <div class="card"><h3>Deadline and cost</h3>
+          <p><span class="k">Deadline</span><br><span class="mono">${esc(s.dl)}</span> ${dayChip(id)}</p>
+          <p><span class="k">What he pays</span><br>${esc(s.cost)}</p>
+          <p><span class="k">Application route</span><br>${esc(sy.n)}, fee ${esc(sy.fee)}</p>
+          <p class="small">${esc(AIDHELP[s.aid])}</p>
+          ${d ? `<p class="dpn">State Program has funded ${d[0]} bachelor's here: ${esc(d[1])}.</p>` : ""}
+        </div>
+        <div class="card"><h3>Requirements to check</h3>
+          <ul>${reg.map((x) => `<li>${esc(x)}</li>`).join("")}${s.note ? `<li>${esc(s.note)}</li>` : ""}</ul>
+          ${LINK[id] ? `<a href="${LINK[id]}" target="_blank" rel="noopener">Official site</a>` : ""}
+          <p class="small">Every date, fee and rule here needs a check on the official page.</p>
+        </div>
+        <div class="card"><h3>Notes</h3><textarea id="note" rows="5" placeholder="Contacts, essay ideas, scholarship amounts, anything else" aria-label="Notes">${esc(state.notes[id] || "")}</textarea></div>
+      </div>
+    </div>`;
+  showPane("school");
+  try { location.hash = "school-" + id; } catch (x) {}
+}
+function showPane(t) {
+  $$(".pane").forEach((p) => p.classList.toggle("on", p.id === "p-" + t));
+  $$("[data-tab]").forEach((b) => b.setAttribute("aria-selected", String(b.dataset.tab === (t === "school" ? "schools" : t))));
+  window.scrollTo(0, 0);
+}
+function showTab(t) {
+  showPane(t); current = "";
+  if (t === "decide") renderDecide();
+  if (t === "home") { renderNext(); }
+  try { location.hash = t; } catch (x) {}
+}
+function refreshAll() { counts(); renderList(); renderNext(); if (current) { const y = window.scrollY; openSchool(current); window.scrollTo(0, y); } }
+
+$$("[data-tab]").forEach((b) => b.addEventListener("click", () => showTab(b.dataset.tab)));
+document.addEventListener("change", (ev) => {
+  const t = ev.target;
+  if (t.matches("select[data-id]")) { state.st[t.dataset.id] = t.value; save(); refreshAll(); }
+  if (t.matches("select[data-doc]")) { state.docs[t.dataset.doc] = t.value; save(); renderDocs(); }
+  if (t.matches("select[data-person]")) { state.people[+t.dataset.person].s = t.value; save(); renderPeople(); }
+  if (t.matches("#tasks input")) { state.tasks[t.id.slice(1)] = t.checked; save(); }
+  if (t.matches("input[data-step]")) { const id = current; state.steps[id] = state.steps[id] || {}; state.steps[id][t.dataset.step] = t.checked; save(); const h = t.closest(".card").querySelector("h3"); const pr = stepProg(id); h.textContent = `What to do (${pr[0]} of ${pr[1]})`; renderList(); }
+  if (t.matches("[data-off]")) { const id = t.dataset.off; state.offer[id] = state.offer[id] || {}; state.offer[id][t.dataset.f] = t.value; save(); if (t.dataset.f !== "sch") renderDecide(); }
+});
+document.addEventListener("input", (ev) => { const t = ev.target; if (t.id === "note") { state.notes[current] = t.value; save(); } });
+document.addEventListener("click", (ev) => {
+  const t = ev.target.closest("button"); if (!t) return;
+  if (t.dataset.del !== undefined) { state.ach.splice(+t.dataset.del, 1); save(); renderAch(); }
+  if (t.dataset.open) openSchool(t.dataset.open);
+  if (t.id === "back") showTab("schools");
+  if (t.id === "cadd") { const i = $("#cstep"); const v = i.value.trim(); if (!v) return; (state.custom[current] = state.custom[current] || []).push(v); save(); const y = window.scrollY; openSchool(current); window.scrollTo(0, y); renderList(); }
+  if (t.dataset.choose) { state.chosen = state.chosen === t.dataset.choose ? "" : t.dataset.choose; save(); renderDecide(); }
+});
+$$("[data-p]").forEach((b) => b.addEventListener("click", () => { view = b.dataset.p; $$("[data-p]").forEach((x) => x.setAttribute("aria-pressed", String(x === b))); renderList(); }));
+$$("[data-d]").forEach((b) => b.addEventListener("click", () => { dview = b.dataset.d; $$("[data-d]").forEach((x) => x.setAttribute("aria-pressed", String(x === b))); renderDocs(); }));
+$$("[data-mode]").forEach((b) => b.addEventListener("click", () => { mode = b.dataset.mode; $$("[data-mode]").forEach((x) => x.setAttribute("aria-pressed", String(x === b))); renderList(); }));
+$("#sort").addEventListener("change", (ev) => { sort = ev.target.value; renderList(); });
+$("#q").addEventListener("input", (ev) => { q = ev.target.value.trim().toLowerCase(); renderList(); });
+$("#hide-skip").addEventListener("click", (ev) => { hideSkip = !hideSkip; ev.currentTarget.setAttribute("aria-pressed", String(hideSkip)); renderList(); });
+function addAch() { const i = $("#ach-in"); const v = i.value.trim(); if (!v) return; state.ach.push(v); i.value = ""; save(); renderAch(); }
+$("#ach-add").addEventListener("click", addAch);
+$("#ach-in").addEventListener("keydown", (ev) => { if (ev.key === "Enter") addAch(); });
+
+renderTasks(); renderAch(); renderGet(); balance(); renderList(); renderDocs(); renderPeople(); renderBars(); renderTL(); renderNext(); counts();
+(function () {
+  let h = ""; try { h = location.hash.slice(1); } catch (x) {}
+  if (h.startsWith("school-") && byId(h.slice(7))) openSchool(h.slice(7));
+  else if (["schools","docs","funding","decide","dates"].includes(h)) showTab(h);
+})();
+</script>
+<script>if("serviceWorker" in navigator){window.addEventListener("load",function(){navigator.serviceWorker.register("sw.js").catch(function(){});});}</script>
+</body>
+</html>
